@@ -59,7 +59,7 @@ def show_pair(idx1, idx2):
 
 def TrainingModel():
     detector = cv2.FaceDetectorYN.create(
-        "././data/face_detection_yunet_2022mar.onnx",
+        "../../data/face_detection_yunet_2022mar.onnx",
         "",
         (320, 320),
         0.9,
@@ -69,10 +69,10 @@ def TrainingModel():
     detector.setInputSize((320, 320))
 
     recognizer = cv2.FaceRecognizerSF.create(
-                "././data/face_recognition_sface_2021dec.onnx","")
+                "../../data/face_recognition_sface_2021dec.onnx","")
 
 
-    metadata = load_metadata('././model/images')
+    metadata = load_metadata('../../model/images')
 
     embedded = np.zeros((metadata.shape[0], 128))
 
@@ -101,5 +101,4 @@ def TrainingModel():
     svc.fit(X_train, y_train)
     acc_svc = accuracy_score(y_test, svc.predict(X_test))
     print('SVM accuracy: %.6f' % acc_svc)
-    joblib.dump(svc,'././model/output/svc.pkl')
-
+    joblib.dump(svc,'../../model/output/svc.pkl')

@@ -1,13 +1,41 @@
 import streamlit as st
 import numpy as np
 import cv2 as cv
+import argparse
+import os
+import joblib
+
+
+
+
+def str2bool(v):
+    if v.lower() in ['on', 'yes', 'true', 'y', 't']:
+        return True
+    elif v.lower() in ['off', 'no', 'false', 'n', 'f']:
+        return False
+    else:
+        raise NotImplementedError
 
 st.subheader('Phát hiện khuôn mặt')
-
+mydict = [f.name for f in os.scandir("./model/images") if f.is_dir()]
 FRAME_WINDOW = st.image([])
 deviceId = 0
 cap = cv.VideoCapture(deviceId)
+svc = joblib.load('./model/output/svc.pkl')
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--image1', '-i1', type=str, help='Path to the input image1. Omit for detecting on default camera.')
+parser.add_argument('--image2', '-i2', type=str, help='Path to the input image2. When image1 and image2 parameters given then the program try to find a face on both images and runs face recognition algorithm.')
+parser.add_argument('--video', '-v', type=str, help='Path to the input video.')
+parser.add_argument('--scale', '-sc', type=float, default=1.0, help='Scale factor used to resize input video frames.')
+parser.add_argument('--face_detection_model', '-fd', type=str, default='./data/face_detection_yunet_2022mar.onnx', help='Path to the face detection model. Download the model at https://github.com/opencv/opencv_zoo/tree/master/models/face_detection_yunet')
+parser.add_argument('--face_recognition_model', '-fr', type=str, default='./data/face_recognition_sface_2021dec.onnx', help='Path to the face recognition model. Download the model at https://github.com/opencv/opencv_zoo/tree/master/models/face_recognition_sface')
+parser.add_argument('--score_threshold', type=float, default=0.9, help='Filtering out faces of score < score_threshold.')
+parser.add_argument('-  -nms_threshold', type=float, default=0.3, help='Suppress bounding boxes of iou >= nms_threshold.')
+parser.add_argument('--top_k', type=int, default=5000, help='Keep top_k bounding boxes before NMS.')
+parser.add_argument('--save', '-s', type=str2bool, default=False, help='Set true to save results. This flag is invalid when using camera.')
+args = parser.parse_args()
 
 if 'face_detection_stop' not in st.session_state:
     st.session_state.face_detection_stop = True
@@ -62,6 +90,7 @@ tm = cv.TickMeter()
 frameWidth = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
 frameHeight = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
 detector.setInputSize([frameWidth, frameHeight])
+recognizer = cv.FaceRecognizerSF.create(args.face_recognition_model,"")
 
 while True:
     hasFrame, frame = cap.read()
@@ -75,6 +104,16 @@ while True:
     tm.start()
     faces = detector.detect(frame) # faces is a tuple
     tm.stop()
+
+    if faces[1] is not None:
+        face_align = recognizer.alignCrop(frame, faces[1][0])
+        face_feature = recognizer.feature(face_align)
+        test_predict = svc.predict(face_feature)
+        result = mydict[test_predict[0]]
+        cv.putText(frame,result,(1,50),cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+    if st.session_state.face_detection_stop == True:
+        break
 
     # Draw results on the input image
     visualize(frame, faces, tm.getFPS())

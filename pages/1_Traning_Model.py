@@ -24,8 +24,7 @@ def convert_name(name):
 
 st.set_page_config(page_title="Training Model", page_icon="📈")
 
-st.markdown("# Tạo dữ liệu cho facebook")
-st.sidebar.header("Lấy dữ liệu về khuôn mặt")
+st.markdown("# Thêm dữ liệu mới ")
 
 name = st.text_input('Nhận tên', '')
 st.write('Dữ liệu sẽ được lưu lại trong folder : models/'+convert_name(name))
@@ -79,7 +78,7 @@ if 'frame_stop' not in st.session_state:
     st.session_state.frame_stop = frame_stop
     print('Đã load stop.jpg')
 
-trainingBtn = st.button('Training cho mẫu',on_click=Training.TrainingModel())
+trainingBtn = st.button('Training cho mẫu')
 
 if st.session_state.stop == True:
     FRAME_WINDOW.image(st.session_state.frame_stop, channels='BGR')

@@ -7,8 +7,6 @@ st.set_page_config(
 
 st.write("# Báo cáo cuối kì ")
 
-st.sidebar.success("Select a demo above.")
-
 st.markdown(
     """
     ### Nội dung của bài báo cáo cuối kì:
