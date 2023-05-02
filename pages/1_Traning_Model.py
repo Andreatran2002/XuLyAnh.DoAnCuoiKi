@@ -71,14 +71,17 @@ if getModelBtn:
         st.session_state.stop = False
 
 
-print('Trang thai nhan Stop', st.session_state.stop)
 
 if 'frame_stop' not in st.session_state:
     frame_stop = cv.imread('./asset/stop.jpg')
     st.session_state.frame_stop = frame_stop
-    print('Đã load stop.jpg')
 
-trainingBtn = st.button('Training cho mẫu')
+
+def onClickTraining():
+    print("hehehehe")
+    Training.TrainingModel()
+
+trainingBtn = st.button('Training cho mẫu', on_click=onClickTraining)
 
 if st.session_state.stop == True:
     FRAME_WINDOW.image(st.session_state.frame_stop, channels='BGR')
@@ -124,7 +127,8 @@ dem = 0
 while True:
     hasFrame, frame = cap.read()
     if not hasFrame:
-        print('No frames grabbed!')
+        break
+    if st.session_state.stop == True:
         break
     # Inference
     tm.start()
@@ -136,7 +140,6 @@ while True:
     if faces[1] is not None and name != "":
         if os.path.exists('./model/images/'+convert_name(name)) == False:
             os.mkdir('./model/images/'+convert_name(name))
-        print("đang chụp")
         face_align = recognizer.alignCrop(frame, faces[1][0])
         file_name = './model/images/'+convert_name(name)+'/'+convert_name(name)+'_%04d.bmp' % dem
         cv.imwrite(file_name, face_align)
@@ -145,8 +148,7 @@ while True:
     # print(key)
     # Draw results on the input image
 
-    if st.session_state.stop == True:
-        break
+    
    
     # Visualize results
     FRAME_WINDOW.image(frame, channels='BGR')

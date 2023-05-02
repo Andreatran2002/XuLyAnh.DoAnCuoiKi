@@ -102,3 +102,4 @@ def TrainingModel():
     acc_svc = accuracy_score(y_test, svc.predict(X_test))
     print('SVM accuracy: %.6f' % acc_svc)
     joblib.dump(svc,'../../model/output/svc.pkl')
+TrainingModel()
